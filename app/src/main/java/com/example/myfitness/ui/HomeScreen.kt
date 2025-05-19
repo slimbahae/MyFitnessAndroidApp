@@ -81,6 +81,7 @@ fun HomeScreen(navController: NavController) {
     var selectedExercise   by remember { mutableStateOf<Exercise?>(null) }
     var userName          by remember { mutableStateOf("User") }
     var congratsDialog    by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var lastUnlockedDayIndex by remember { mutableStateOf(0) }
 
     // Nom du jour courant, ex. "Monday"
     val todayName = LocalDate.now()
@@ -111,6 +112,11 @@ fun HomeScreen(navController: NavController) {
                 .document("current").get().await()
             planDoc.get("plan")?.let {
                 workout = json.decodeFromString(it.toString())
+
+                // Find the index of today's workout and set lastUnlockedDayIndex
+                val todayIndex = workout.indexOfFirst { it.day.equals(todayName, ignoreCase = true) }
+                lastUnlockedDayIndex = if (todayIndex != -1) todayIndex else 0 // Default to first day if today not found
+
             } ?: Log.e("HomeScreen", "No plan found")
 
             // Statistiques
@@ -281,7 +287,7 @@ fun HomeScreen(navController: NavController) {
                     Spacer(Modifier.width(18.dp))
                     Column {
                         Text("Welcome back,", fontSize = 16.sp, color = LightGray)
-                        Text(userName, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = White)
+                        Text(userName+ " 👋", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = White)
                     }
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = {
@@ -485,8 +491,8 @@ fun HomeScreen(navController: NavController) {
                         )
                     }
                     
-                    workout.forEach { day ->
-                        val locked = !day.day.equals(todayName, ignoreCase = true)
+                    workout.forEachIndexed { index, day ->
+                        val locked = index > lastUnlockedDayIndex
                         val completed = completedDays.contains(day.day)
                         WorkoutDayCard(
                             day = day,
@@ -517,6 +523,12 @@ fun HomeScreen(navController: NavController) {
                                     daysCompleted = completedDays.size
                                     saveStats()
                                     congratsDialog = Pair("🏆", "You completed today's workout!")
+
+                                    // Unlock the next day if this day was the last unlocked one
+                                    val completedDayIndex = workout.indexOfFirst { it.day == day.day }
+                                    if (completedDayIndex != -1 && completedDayIndex == lastUnlockedDayIndex && completedDayIndex < workout.size - 1) {
+                                        lastUnlockedDayIndex++
+                                    }
                                 }
                             }
                         )

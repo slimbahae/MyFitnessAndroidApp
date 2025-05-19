@@ -33,6 +33,8 @@ import androidx.compose.material.icons.outlined.Cake
 import androidx.compose.material.icons.outlined.Height
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Flag
+import com.example.myfitness.model.WorkoutStats
+import kotlinx.coroutines.tasks.await
 
 @Composable
 fun CompleteProfileScreen(navController: NavController, auth: FirebaseAuth) {
@@ -168,6 +170,25 @@ fun CompleteProfileScreen(navController: NavController, auth: FirebaseAuth) {
                                                 return@launch
                                             }
 
+                                            // Load existing workout progress and stats
+                                            val existingWorkoutDoc = db.collection("users")
+                                                .document(uid)
+                                                .collection("workouts")
+                                                .document("current")
+                                                .get()
+                                                .await()
+
+                                            val existingStatsDoc = db.collection("users")
+                                                .document(uid)
+                                                .collection("stats")
+                                                .get()
+                                                .await()
+
+                                            // Get the latest stats
+                                            val latestStats = existingStatsDoc.documents
+                                                .mapNotNull { it.toObject(WorkoutStats::class.java) }
+                                                .maxByOrNull { it.lastUpdated }
+
                                             val userMap = mapOf(
                                                 "age" to profile.age,
                                                 "heightCm" to profile.heightCm,
@@ -187,16 +208,71 @@ fun CompleteProfileScreen(navController: NavController, auth: FirebaseAuth) {
                                                 // Convert JsonElement to string for Firestore
                                                 val planString = plan.toString()
 
+                                                // Save new workout plan
                                                 db.collection("users")
                                                     .document(uid)
                                                     .collection("workouts")
                                                     .document("current")
-                                                    .set(mapOf("plan" to planString))
+                                                    .set(mapOf(
+                                                        "plan" to planString,
+                                                        "lastUpdated" to System.currentTimeMillis()
+                                                    ))
                                                     .addOnSuccessListener {
                                                         Log.d("WorkoutSave", "Workout saved successfully")
-                                                        Toast.makeText(context, "Profile and workout saved!", Toast.LENGTH_SHORT).show()
-                                                        navController.navigate("home") {
-                                                            popUpTo("completeProfile") { inclusive = true }
+                                                        
+                                                        // Preserve existing stats if they exist
+                                                        if (latestStats != null) {
+                                                            val statsCollection = db.collection("users")
+                                                                .document(uid)
+                                                                .collection("stats")
+                                                            
+                                                            // Create a new stats document with previous progress
+                                                            val newStatsDoc = mapOf(
+                                                                "completedExercises" to latestStats.completedExercises,
+                                                                "totalCaloriesBurned" to latestStats.totalCaloriesBurned,
+                                                                "daysCompleted" to latestStats.daysCompleted,
+                                                                "lastUpdated" to System.currentTimeMillis()
+                                                            )
+                                                            
+                                                            statsCollection.add(newStatsDoc)
+                                                                .addOnSuccessListener {
+                                                                    Log.d("StatsSave", "Stats preserved and new document created")
+                                                                    Toast.makeText(context, "Profile and workout updated with previous progress!", Toast.LENGTH_SHORT).show()
+                                                                    navController.navigate("home") {
+                                                                        popUpTo("completeProfile") { inclusive = true }
+                                                                    }
+                                                                }
+                                                                .addOnFailureListener { exception ->
+                                                                    Log.e("StatsSave", "Failed to preserve stats", exception)
+                                                                    debugInfo = "Failed to preserve stats: ${exception.message}"
+                                                                    isLoading = false
+                                                                }
+                                                        } else {
+                                                            // If no previous stats exist, create new empty stats
+                                                            val statsCollection = db.collection("users")
+                                                                .document(uid)
+                                                                .collection("stats")
+                                                            
+                                                            val newStatsDoc = mapOf(
+                                                                "completedExercises" to mapOf<String, Int>(),
+                                                                "totalCaloriesBurned" to 0,
+                                                                "daysCompleted" to 0,
+                                                                "lastUpdated" to System.currentTimeMillis()
+                                                            )
+                                                            
+                                                            statsCollection.add(newStatsDoc)
+                                                                .addOnSuccessListener {
+                                                                    Log.d("StatsSave", "New stats document created")
+                                                                    Toast.makeText(context, "Profile and workout updated!", Toast.LENGTH_SHORT).show()
+                                                                    navController.navigate("home") {
+                                                                        popUpTo("completeProfile") { inclusive = true }
+                                                                    }
+                                                                }
+                                                                .addOnFailureListener { exception ->
+                                                                    Log.e("StatsSave", "Failed to create new stats", exception)
+                                                                    debugInfo = "Failed to create new stats: ${exception.message}"
+                                                                    isLoading = false
+                                                                }
                                                         }
                                                     }
                                                     .addOnFailureListener { exception ->

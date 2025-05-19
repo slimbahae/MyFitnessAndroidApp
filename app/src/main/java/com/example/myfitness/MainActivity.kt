@@ -28,6 +28,16 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
+// Route constants
+object Routes {
+    const val LOGIN = "login"
+    const val REGISTER = "register"
+    const val HOME = "home"
+    const val COMPLETE_PROFILE = "completeProfile"
+    const val STATISTICS = "statistics"
+    const val PROFILE = "profile"
+}
+
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +55,7 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     val user = auth.currentUser
                     startDestination = when {
-                        user == null -> "login"
+                        user == null -> Routes.LOGIN
                         else -> {
                             val userRef = firestore.collection("users").document(user.uid)
                             val userDoc = userRef.get().await()
@@ -53,11 +63,11 @@ class MainActivity : ComponentActivity() {
                                 .document("current").get().await()
 
                             if (!userDoc.exists()) {
-                                "completeProfile"
+                                Routes.COMPLETE_PROFILE
                             } else if (!workoutDoc.exists()) {
-                                "completeProfile"
+                                Routes.COMPLETE_PROFILE
                             } else {
-                                "home"
+                                Routes.HOME
                             }
                         }
                     }
@@ -94,25 +104,25 @@ fun AppNavigation(
         navController = navController,
         startDestination = startDestination
     ) {
-        composable("register") {
+        composable(Routes.REGISTER) {
             RegisterScreen(navController = navController, auth = auth)
         }
-        composable("login") {
+        composable(Routes.LOGIN) {
             LoginScreen(navController = navController, auth = auth)
         }
-        composable("home") {
+        composable(Routes.HOME) {
             HomeScreen(navController = navController)
         }
-        composable("completeProfile") {
+        composable(Routes.COMPLETE_PROFILE) {
             CompleteProfileScreen(
                 navController = navController,
                 auth = auth
             )
         }
-        composable("statistics") {
+        composable(Routes.STATISTICS) {
             StatisticsScreen(navController = navController)
         }
-        composable("profile") {
+        composable(Routes.PROFILE) {
             ProfileScreen(navController = navController)
         }
     }

@@ -29,6 +29,11 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Person
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.ShowChart
+
+// You will need to import the necessary components from your charting library
+// Example: import com.your_charting_library.LineChart
 
 val Black = Color(0xFF000000)
 val Purple = Color(0xFF8F5AFF)
@@ -240,6 +245,146 @@ fun StatisticsScreen(navController: NavController) {
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Exercise Evolution Chart Header
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.FitnessCenter,
+                            contentDescription = "Exercise Chart Icon",
+                            tint = Purple,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = "Exercise Evolution",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = White
+                        )
+                    }
+
+                    // Exercise Evolution Chart Placeholder
+                    // You need to replace this placeholder with the actual chart composable from your library.
+                    // Pass 'exerciseChartData' to the chart composable.
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = DarkGray),
+                        elevation = CardDefaults.cardElevation(0.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            if (weeklyStats.isNotEmpty()) {
+                                // Data preparation for Exercise Evolution Chart (Cumulative Exercises)
+                                var cumulativeExercises = 0
+                                val exerciseChartData = weeklyStats.map { stats ->
+                                    cumulativeExercises += stats.completedExercises.values.sum()
+                                    // Assuming the chart library uses a Pair of (x-value, y-value)
+                                    // Replace 'stats.lastUpdated.toFloat()' with appropriate x-axis value (e.g., date index or formatted date string)
+                                    Pair(stats.lastUpdated.toFloat(), cumulativeExercises.toFloat())
+                                }
+
+                                // Replace this Text with your chart composable, e.g.:
+                                // LineChart(data = exerciseChartData, ...) or similar
+                                // Text("Exercise Evolution Chart Placeholder", color = LightGray)
+                                 /* Example using a hypothetical library:
+                                 LineChart(
+                                     data = exerciseChartData,
+                                     modifier = Modifier.fillMaxSize().padding(16.dp),
+                                     lineColor = Purple,
+                                     pointColor = White
+                                     // ... other chart customization parameters
+                                 )
+                                 */
+
+                            } else {
+                                 Text("No exercise data available", color = LightGray)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                     // Calories Evolution Chart Header
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.LocalFireDepartment,
+                            contentDescription = "Calories Chart Icon",
+                            tint = Purple,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = "Calories Evolution",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = White
+                        )
+                    }
+
+                     // Calories Evolution Chart Placeholder
+                    // You need to replace this placeholder with the actual chart composable from your library.
+                    // Pass 'caloriesChartData' to the chart composable.
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = DarkGray),
+                        elevation = CardDefaults.cardElevation(0.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            if (weeklyStats.isNotEmpty()) {
+                                // Data preparation for Calories Evolution Chart (Cumulative Calories)
+                                var cumulativeCalories = 0
+                                 val caloriesChartData = weeklyStats.map { stats ->
+                                    cumulativeCalories += stats.totalCaloriesBurned
+                                     // Assuming the chart library uses a Pair of (x-value, y-value)
+                                    // Replace 'stats.lastUpdated.toFloat()' with appropriate x-axis value (e.g., date index or formatted date string)
+                                    Pair(stats.lastUpdated.toFloat(), cumulativeCalories.toFloat())
+                                }
+                                // Replace this Text with your chart composable, e.g.:
+                                // LineChart(data = caloriesChartData, ...) or similar
+                                 //Text("Calories Evolution Chart Placeholder", color = LightGray)
+                                 /* Example using a hypothetical library:
+                                 LineChart(
+                                     data = caloriesChartData,
+                                     modifier = Modifier.fillMaxSize().padding(16.dp),
+                                     lineColor = Purple,
+                                     pointColor = White
+                                     // ... other chart customization parameters
+                                 )
+                                 */
+                            } else {
+                                 Text("No calorie data available", color = LightGray)
+                            }
+                        }
+                    }
+
+                     Spacer(modifier = Modifier.height(24.dp))
+
                     // Weekly History Card
                     Card(
                         modifier = Modifier
@@ -273,4 +418,38 @@ fun StatisticsScreen(navController: NavController) {
             }
         }
     }
-} 
+}
+
+// Placeholder for charting library integration
+// You would typically use a charting library like MPAndroidChart (View-based) or Compose Chart (Compose-based)
+// Add the dependency to your app/build.gradle file:
+// example for Compose Chart:
+// implementation "com.github.aayushatharva.broton:compose-chart:<version>"
+// implementation "com.github.aayushatharva.broton:compose-chart-common:<version>"
+
+// Example of how you might define a composable for a chart (requires a charting library)
+/*
+@Composable
+fun ExerciseEvolutionChart(weeklyStats: List<WorkoutStats>) {
+    // Data transformation and charting logic here
+    // For example, extract dates and total exercises for each entry
+    val chartData = weeklyStats.map { stats ->
+        val date = LocalDate.ofEpochDay(stats.lastUpdated / (24 * 60 * 60 * 1000))
+        val totalExercises = stats.completedExercises.values.sum()
+        // Use this data with your chosen charting library composable
+        // Example: LineChart(data = chartData, ...)
+    }
+}
+
+@Composable
+fun CaloriesEvolutionChart(weeklyStats: List<WorkoutStats>) {
+    // Data transformation and charting logic here
+    // For example, extract dates and total calories burned for each entry
+     val chartData = weeklyStats.map { stats ->
+        val date = LocalDate.ofEpochDay(stats.lastUpdated / (24 * 60 * 60 * 1000))
+        val totalCalories = stats.totalCaloriesBurned
+        // Use this data with your chosen charting library composable
+        // Example: LineChart(data = chartData, ...)
+    }
+}
+*/ 
