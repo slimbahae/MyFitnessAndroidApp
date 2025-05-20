@@ -115,8 +115,7 @@ fun CompleteProfileScreen(navController: NavController, auth: FirebaseAuth) {
             Text(
                 "Profile Setup (${step + 1}/7)",
                 style = MaterialTheme.typography.headlineSmall.copy(
-                    color = White,
-                    fontWeight = FontWeight.Bold
+                    color = White
                 )
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -273,7 +272,7 @@ fun CompleteProfileScreen(navController: NavController, auth: FirebaseAuth) {
             ) {
                 if (step > 0) {
                     TextButton(onClick = { step-- }) {
-                        Text("Back", color = Purple)
+                        Text("Back", style = MaterialTheme.typography.labelLarge.copy(color = Purple))
                     }
                 }
 
@@ -476,10 +475,10 @@ fun CompleteProfileScreen(navController: NavController, auth: FirebaseAuth) {
                                 strokeWidth = 2.dp,
                                 color = Purple
                             )
-                            Text("Processing...", color = White)
+                            Text("Processing...", style = MaterialTheme.typography.labelLarge.copy(color = White))
                         }
                     } else {
-                        Text(if (step < 6) "Next" else "Finish", color = White)
+                        Text(if (step < 6) "Next" else "Finish", style = MaterialTheme.typography.labelLarge.copy(color = White))
                     }
                 }
             }
@@ -657,9 +656,7 @@ fun EngagingText(title: String, subtitle: String, scale: Float) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge.copy(
-                color = Purple,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp
+                color = Purple
             ),
             textAlign = TextAlign.Center,
             modifier = Modifier
@@ -669,8 +666,7 @@ fun EngagingText(title: String, subtitle: String, scale: Float) {
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodyLarge.copy(
-                color = LightGray,
-                fontSize = 16.sp
+                color = LightGray
             ),
             textAlign = TextAlign.Center
         )
