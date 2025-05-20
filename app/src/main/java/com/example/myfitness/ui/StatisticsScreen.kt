@@ -43,7 +43,7 @@ val LightGray = Color(0xFFF5F5F5)
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun StatisticsScreen(navController: NavController) {
+fun StatisticsScreen(navController: NavController, exerciseDatabase: List<com.example.myfitness.model.Exercise>? = null) {
     val uid = FirebaseAuth.getInstance().currentUser?.uid
     val db = FirebaseFirestore.getInstance()
     val scrollState = rememberScrollState()
@@ -232,13 +232,14 @@ fun StatisticsScreen(navController: NavController) {
                             Text("Exercise Completion", fontWeight = FontWeight.SemiBold, color = White, fontSize = 18.sp)
                             Spacer(modifier = Modifier.height(10.dp))
                             latestStats?.completedExercises?.forEach { (exercise, sets) ->
+                                val displayName = exerciseDatabase?.find { it.id == exercise }?.name ?: exercise
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 4.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(exercise, color = LightGray, fontSize = 15.sp)
+                                    Text(displayName, color = LightGray, fontSize = 15.sp)
                                     Text("$sets sets", color = Purple, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                 }
                             }

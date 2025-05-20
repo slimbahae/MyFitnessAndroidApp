@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class WorkoutStats(
+    // completedExercises: Map<exerciseName, setsCompleted>
     val completedExercises: Map<String, Int> = emptyMap(),
     val totalCaloriesBurned: Int = 0,
     val daysCompleted: Int = 0,

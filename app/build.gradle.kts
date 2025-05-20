@@ -84,6 +84,11 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
+    implementation("io.coil-kt:coil-gif:2.4.0")
+
 
 // for entriesOf()
 

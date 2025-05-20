@@ -85,14 +85,13 @@ fun LoginForm(
         verticalArrangement   = Arrangement.Center,
         horizontalAlignment   = Alignment.CenterHorizontally
     ) {
-        // 1) Icône de l’application (mipmap)
+        // 1) Icône de l'application (mipmap)
         Image(
-            painter = painterResource(id = R.drawable.ic_app_photo),
-            contentDescription = "App Photo",
-            contentScale = ContentScale.Crop,    // adapter l’image sur l’espace
+            painter = painterResource(id = R.drawable.login),
+            contentDescription = "Login Illustration",
+            contentScale = ContentScale.Fit,
             modifier = Modifier
-                .size(200.dp)                       // par exemple, plus grand qu’une icône
-                .clip(RoundedCornerShape(12.dp))    // optional : coins arrondis
+                .size(200.dp)
                 .padding(bottom = 24.dp)
         )
         // 2) Titre "Login"
@@ -181,7 +180,7 @@ fun LoginForm(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                /** Lien vers l’inscription **/
+                /** Lien vers l'inscription **/
                 TextButton(onClick = onRegisterClick) {
                     Text("Don't have an account? Register", color = Purple)
                 }

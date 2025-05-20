@@ -1,10 +1,14 @@
 package com.example.myfitness
 
+import GeminiTestScreen
+import android.Manifest
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,16 +21,23 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import androidx.compose.ui.platform.LocalContext
+import com.example.myfitness.model.Exercise
 import com.example.myfitness.ui.CompleteProfileScreen
+import com.example.myfitness.ui.ExerciseDetailScreen
 import com.example.myfitness.ui.HomeScreen
 import com.example.myfitness.ui.LoginScreen
 import com.example.myfitness.ui.ProfileScreen
 import com.example.myfitness.ui.RegisterScreen
+import com.example.myfitness.ui.ReminderSettingsScreen
 import com.example.myfitness.ui.StatisticsScreen
 import com.example.myfitness.ui.theme.MyFitnessTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import kotlinx.serialization.json.Json
 
 // Route constants
 object Routes {
@@ -36,13 +47,29 @@ object Routes {
     const val COMPLETE_PROFILE = "completeProfile"
     const val STATISTICS = "statistics"
     const val PROFILE = "profile"
+    const val REMINDER_SETTINGS = "reminderSettings"
 }
 
 class MainActivity : ComponentActivity() {
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d("MainActivity", "Notification permission granted")
+        } else {
+            Log.e("MainActivity", "Notification permission denied")
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Request notification permission for Android 13 and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         setContent {
             MyFitnessTheme {
@@ -50,6 +77,8 @@ class MainActivity : ComponentActivity() {
                 val auth = FirebaseAuth.getInstance()
                 val firestore = FirebaseFirestore.getInstance()
                 var startDestination by remember { mutableStateOf<String?>(null) }
+                val exerciseDatabase = remember { mutableStateOf<List<Exercise>>(emptyList()) }
+                val context = LocalContext.current
 
                 // 🔄 Determine where to start
                 LaunchedEffect(Unit) {
@@ -73,6 +102,12 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                LaunchedEffect(Unit) {
+                    val jsonString = context.assets.open("exercises.json").bufferedReader().use { it.readText() }
+                    exerciseDatabase.value = Json { ignoreUnknownKeys = true }
+                        .decodeFromString(jsonString)
+                }
+
                 // 🚀 Show UI when startDestination is known
                 if (startDestination != null) {
                     Scaffold(
@@ -83,7 +118,8 @@ class MainActivity : ComponentActivity() {
                             AppNavigation(
                                 navController = navController,
                                 auth = auth,
-                                startDestination = startDestination!!
+                                startDestination = startDestination!!,
+                                exerciseDatabase = exerciseDatabase.value
                             )
                         }
                     }
@@ -98,7 +134,8 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation(
     navController: NavHostController,
     auth: FirebaseAuth,
-    startDestination: String
+    startDestination: String,
+    exerciseDatabase: List<Exercise>
 ) {
     NavHost(
         navController = navController,
@@ -111,7 +148,7 @@ fun AppNavigation(
             LoginScreen(navController = navController, auth = auth)
         }
         composable(Routes.HOME) {
-            HomeScreen(navController = navController)
+            HomeScreen(navController = navController, exerciseDatabase = exerciseDatabase)
         }
         composable(Routes.COMPLETE_PROFILE) {
             CompleteProfileScreen(
@@ -124,6 +161,23 @@ fun AppNavigation(
         }
         composable(Routes.PROFILE) {
             ProfileScreen(navController = navController)
+        }
+        composable(Routes.REMINDER_SETTINGS) {
+            ReminderSettingsScreen(navController = navController)
+        }
+        composable(
+            "exerciseDetail/{exerciseId}",
+            arguments = listOf(navArgument("exerciseId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val exerciseId = backStackEntry.arguments?.getString("exerciseId") ?: ""
+            ExerciseDetailScreen(
+                exerciseId = exerciseId,
+                exerciseDatabase = exerciseDatabase,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("geminiTest") {
+            GeminiTestScreen(context = LocalContext.current)
         }
     }
 }
