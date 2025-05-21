@@ -88,6 +88,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)
     implementation("io.coil-kt:coil-gif:2.4.0")
+    implementation("androidx.core:core-ktx:1.13.1")
 
 
 // for entriesOf()
