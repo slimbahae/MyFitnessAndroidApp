@@ -37,7 +37,7 @@ After registration and profile completion (age, height, weight, goals), the app 
 
 ## Setup Instructions
 
-1. Clone the repository
+1. Clone the repository https://github.com/slimbahae/MyFitnessAndroidApp.git
 2. Add your `google-services.json` file in the `app/` directory
 3. Configure your Gemini API key in `local.properties`:
 
